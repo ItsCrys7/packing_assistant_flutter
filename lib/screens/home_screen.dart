@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart';
 import 'dart:convert';
 import '../models/packing_model.dart';
 import '../widgets/category_card.dart';
 import 'checklist_screen.dart';
+import '../main.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,6 +17,13 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<PackingCategory> categories = [];
   bool isLoading = true;
+
+  String _quoteForIcon(int codePoint) {
+    for (final entry in iconQuotes.entries) {
+      if (entry.key.codePoint == codePoint) return entry.value;
+    }
+    return "";
+  }
 
   // Lista de culori disponibile pentru alegere
   final List<Color> availableColors = [
@@ -45,6 +54,23 @@ class _HomeScreenState extends State<HomeScreen> {
     Icons.pets,
   ];
 
+  // Quick quotes mapped to icon choice
+  final Map<IconData, String> iconQuotes = {
+    Icons.home: "Home is where your story begins.",
+    Icons.flight: "Adventure awaits above the clouds.",
+    Icons.train: "Stay on track and enjoy the journey.",
+    Icons.directions_car: "Roads were made for journeys, not destinations.",
+    Icons.hiking: "Take only memories, leave only footprints.",
+    Icons.beach_access: "Salt in the air, sand in your hair.",
+    Icons.school: "Learning is your passport to the future.",
+    Icons.fitness_center: "One rep closer to your goal.",
+    Icons.work: "Pack smart, deliver sharp.",
+    Icons.music_note: "Pack the vibes, not just the gear.",
+    Icons.camera_alt: "Collect moments, not things.",
+    Icons.shopping_bag: "List it, pack it, enjoy it.",
+    Icons.pets: "Don't forget the furry friend.",
+  };
+
   @override
   void initState() {
     super.initState();
@@ -69,15 +95,36 @@ class _HomeScreenState extends State<HomeScreen> {
         categories = decodedList
             .map((item) => PackingCategory.fromJson(item))
             .toList();
+        // Backfill quotes for older saved data
+        for (final cat in categories) {
+          if (cat.quote.isEmpty) {
+            final resolved = _quoteForIcon(cat.iconCode);
+            if (resolved.isNotEmpty) cat.quote = resolved;
+          }
+        }
       } else {
         // Date implicite (doar la prima rulare)
         categories = [
           PackingCategory(
+            title: "Home",
+            iconCode: Icons.home.codePoint,
+            colorValue: Colors.teal.value,
+            quote: iconQuotes[Icons.home] ?? "",
+            items: [
+              PackingItem(name: "Keys"),
+              PackingItem(name: "Wallet"),
+              PackingItem(name: "Phone"),
+              PackingItem(name: "Charger"),
+            ],
+          ),
+          PackingCategory(
             title: "University",
             iconCode: Icons.school.codePoint,
             colorValue: const Color.fromARGB(255, 161, 114, 39).value,
+            quote: iconQuotes[Icons.school] ?? "",
             items: [
               PackingItem(name: "Laptop"),
+              PackingItem(name: "Charger"),
               PackingItem(name: "ID Card"),
             ],
           ),
@@ -100,6 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Valori implicite pentru noua lista
     Color selectedColor = availableColors[0];
     IconData selectedIcon = availableIcons[0];
+    String selectedQuote = iconQuotes[selectedIcon] ?? "";
 
     showDialog(
       context: context,
@@ -107,129 +155,172 @@ class _HomeScreenState extends State<HomeScreen> {
         // StatefulBuilder ne permite sa schimbam starea (culoarea selectata) IN INTERIORUL dialogului
         return StatefulBuilder(
           builder: (context, setStateDialog) {
-            return AlertDialog(
-              title: const Text("New Category"),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 1. Numele Listei
-                    TextField(
-                      controller: titleController,
-                      decoration: const InputDecoration(
-                        labelText: "List Name",
-                        hintText: "e.g. Gym, Holiday",
-                        border: OutlineInputBorder(),
+            return Shortcuts(
+              shortcuts: const {
+                SingleActivator(LogicalKeyboardKey.tab): ActivateIntent(),
+                SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+              },
+              child: Actions(
+                actions: {
+                  ActivateIntent: CallbackAction<ActivateIntent>(
+                    onInvoke: (intent) {
+                      if (titleController.text.isNotEmpty) {
+                        setState(() {
+                          categories.add(
+                            PackingCategory(
+                              title: titleController.text,
+                              iconCode: selectedIcon.codePoint,
+                              colorValue: selectedColor.value,
+                              quote: selectedQuote,
+                              items: [],
+                            ),
+                          );
+                          _saveData();
+                        });
+                        Navigator.pop(context);
+                      }
+                      return null;
+                    },
+                  ),
+                },
+                child: Focus(
+                  autofocus: true,
+                  child: AlertDialog(
+                    title: const Text("New Category"),
+                    content: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 1. Numele Listei
+                          TextField(
+                            controller: titleController,
+                            decoration: const InputDecoration(
+                              labelText: "List Name",
+                              hintText: "e.g. Gym, Holiday",
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // 2. Selectare Culoare
+                          const Text(
+                            "Pick a Color:",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 10),
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: availableColors.map((color) {
+                              return GestureDetector(
+                                onTap: () {
+                                  setStateDialog(() => selectedColor = color);
+                                },
+                                child: Container(
+                                  width: 35,
+                                  height: 35,
+                                  decoration: BoxDecoration(
+                                    color: color,
+                                    shape: BoxShape.circle,
+                                    border: selectedColor == color
+                                        ? Border.all(
+                                            color: Colors.black,
+                                            width: 3,
+                                          )
+                                        : null,
+                                  ),
+                                  child: selectedColor == color
+                                      ? const Icon(
+                                          Icons.check,
+                                          color: Colors.white,
+                                          size: 20,
+                                        )
+                                      : null,
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // 3. Selectare Iconita
+                          const Text(
+                            "Pick an Icon:",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 10),
+                          Wrap(
+                            spacing: 10,
+                            runSpacing: 10,
+                            children: availableIcons.map((icon) {
+                              return GestureDetector(
+                                onTap: () {
+                                  setStateDialog(() {
+                                    selectedIcon = icon;
+                                    selectedQuote = iconQuotes[icon] ?? "";
+                                  });
+                                },
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: selectedIcon == icon
+                                        ? selectedColor.withOpacity(0.2)
+                                        : Colors.grey[200],
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: selectedIcon == icon
+                                        ? Border.all(
+                                            color: selectedColor,
+                                            width: 2,
+                                          )
+                                        : null,
+                                  ),
+                                  child: Icon(
+                                    icon,
+                                    color: selectedIcon == icon
+                                        ? selectedColor
+                                        : Colors.grey,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 20),
-
-                    // 2. Selectare Culoare
-                    const Text(
-                      "Pick a Color:",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: availableColors.map((color) {
-                        return GestureDetector(
-                          onTap: () {
-                            setStateDialog(() => selectedColor = color);
-                          },
-                          child: Container(
-                            width: 35,
-                            height: 35,
-                            decoration: BoxDecoration(
-                              color: color,
-                              shape: BoxShape.circle,
-                              border: selectedColor == color
-                                  ? Border.all(color: Colors.black, width: 3)
-                                  : null,
-                            ),
-                            child: selectedColor == color
-                                ? const Icon(
-                                    Icons.check,
-                                    color: Colors.white,
-                                    size: 20,
-                                  )
-                                : null,
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // 3. Selectare Iconita
-                    const Text(
-                      "Pick an Icon:",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: availableIcons.map((icon) {
-                        return GestureDetector(
-                          onTap: () {
-                            setStateDialog(() => selectedIcon = icon);
-                          },
-                          child: Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: selectedIcon == icon
-                                  ? selectedColor.withOpacity(0.2)
-                                  : Colors.grey[200],
-                              borderRadius: BorderRadius.circular(8),
-                              border: selectedIcon == icon
-                                  ? Border.all(color: selectedColor, width: 2)
-                                  : null,
-                            ),
-                            child: Icon(
-                              icon,
-                              color: selectedIcon == icon
-                                  ? selectedColor
-                                  : Colors.grey,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ],
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Cancel"),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          if (titleController.text.isNotEmpty) {
+                            setState(() {
+                              categories.add(
+                                PackingCategory(
+                                  title: titleController.text,
+                                  iconCode: selectedIcon.codePoint,
+                                  colorValue: selectedColor.value,
+                                  quote: selectedQuote,
+                                  items: [],
+                                ),
+                              );
+                              _saveData();
+                            });
+                            Navigator.pop(context);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: selectedColor,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text("Create"),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text("Cancel"),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    if (titleController.text.isNotEmpty) {
-                      setState(() {
-                        categories.add(
-                          PackingCategory(
-                            title: titleController.text,
-                            iconCode: selectedIcon.codePoint,
-                            colorValue: selectedColor.value,
-                            items: [],
-                          ),
-                        );
-                        _saveData();
-                      });
-                      Navigator.pop(context);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: selectedColor,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text("Create"),
-                ),
-              ],
             );
           },
         );
@@ -247,8 +338,33 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('My Packing Lists'),
         centerTitle: true,
-        backgroundColor: const Color.fromARGB(255, 106, 106, 106),
-        foregroundColor: Colors.white,
+
+        // Nu mai punem culori hardcodate aici, le luăm din Theme definit in main.dart
+        // backgroundColor: ... (șterge linia asta sau las-o null)
+        actions: [
+          // Butonul de schimbare a temei
+          IconButton(
+            icon: Icon(
+              themeNotifier.value == ThemeMode.dark
+                  ? Icons.light_mode
+                  : Icons.dark_mode,
+            ),
+            onPressed: () async {
+              // 1. Schimbăm valoarea în notifier
+              bool isNowDark = themeNotifier.value != ThemeMode.dark;
+              themeNotifier.value = isNowDark
+                  ? ThemeMode.dark
+                  : ThemeMode.light;
+
+              // 2. Salvăm preferința permanent
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('isDarkMode', isNowDark);
+
+              // Forțăm o actualizare a UI-ului local pentru iconiță
+              setState(() {});
+            },
+          ),
+        ],
       ),
       body: categories.isEmpty
           ? const Center(child: Text("No lists yet. Tap + to create one!"))
@@ -316,7 +432,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addNewCategory,
-        backgroundColor: Colors.indigo,
+        backgroundColor: const Color.fromARGB(255, 106, 106, 106),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );

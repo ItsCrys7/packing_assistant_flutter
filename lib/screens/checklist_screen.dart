@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart'; // <--- IMPORT IMPORTANT
+import 'package:flutter/services.dart';
 import '../models/packing_model.dart';
 import '../widgets/packing_list_item.dart'; // <--- Importam widgetul nou creat
 
@@ -31,28 +32,51 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
     final controller = TextEditingController(text: initialValue);
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: InputDecoration(hintText: hint),
+      builder: (context) => Shortcuts(
+        shortcuts: const {
+          SingleActivator(LogicalKeyboardKey.tab): ActivateIntent(),
+          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+        },
+        child: Actions(
+          actions: {
+            ActivateIntent: CallbackAction<ActivateIntent>(
+              onInvoke: (intent) {
+                if (controller.text.isNotEmpty) {
+                  onSave(controller.text);
+                  Navigator.pop(context);
+                }
+                return null;
+              },
+            ),
+          },
+          child: Focus(
+            // ensures shortcuts receive focus
+            autofocus: true,
+            child: AlertDialog(
+              title: Text(title),
+              content: TextField(
+                controller: controller,
+                autofocus: true,
+                decoration: InputDecoration(hintText: hint),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Cancel"),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (controller.text.isNotEmpty) {
+                      onSave(controller.text);
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: const Text("Save"),
+                ),
+              ],
+            ),
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (controller.text.isNotEmpty) {
-                onSave(controller.text);
-                Navigator.pop(context);
-              }
-            },
-            child: const Text("Save"),
-          ),
-        ],
       ),
     );
   }
@@ -106,6 +130,10 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final String headerQuote = widget.category.quote.isNotEmpty
+        ? widget.category.quote
+        : "Pack smart and travel light.";
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: isDeleteMode ? Colors.red : widget.category.color,
@@ -161,9 +189,10 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                     ),
                   ),
                   const SizedBox(height: 5),
-                  const Text(
-                    "Don't forget anything!",
-                    style: TextStyle(
+                  Text(
+                    headerQuote,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
                       fontStyle: FontStyle.italic,
                       color: Colors.grey,
                     ),
