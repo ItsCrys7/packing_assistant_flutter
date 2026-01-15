@@ -18,13 +18,6 @@ class _HomeScreenState extends State<HomeScreen> {
   List<PackingCategory> categories = [];
   bool isLoading = true;
 
-  String _quoteForIcon(int codePoint) {
-    for (final entry in iconQuotes.entries) {
-      if (entry.key.codePoint == codePoint) return entry.value;
-    }
-    return "";
-  }
-
   // Lista de culori disponibile pentru alegere
   final List<Color> availableColors = [
     Colors.blue,
@@ -71,6 +64,10 @@ class _HomeScreenState extends State<HomeScreen> {
     Icons.pets: "Don't forget the furry friend.",
   };
 
+  late final Map<int, String> iconQuotesByCodePoint = {
+    for (final entry in iconQuotes.entries) entry.key.codePoint: entry.value,
+  };
+
   @override
   void initState() {
     super.initState();
@@ -83,6 +80,22 @@ class _HomeScreenState extends State<HomeScreen> {
       categories.map((c) => c.toJson()).toList(),
     );
     await prefs.setString('packing_list_data', encodedData);
+  }
+
+  PackingCategory _buildCategory({
+    required String title,
+    required IconData icon,
+    required Color color,
+    String? quote,
+    List<PackingItem>? items,
+  }) {
+    return PackingCategory(
+      title: title,
+      iconCode: icon.codePoint,
+      colorValue: color.value,
+      quote: quote ?? (iconQuotesByCodePoint[icon.codePoint] ?? ""),
+      items: items ?? <PackingItem>[],
+    );
   }
 
   Future<void> _loadData() async {
@@ -98,18 +111,17 @@ class _HomeScreenState extends State<HomeScreen> {
         // Backfill quotes for older saved data
         for (final cat in categories) {
           if (cat.quote.isEmpty) {
-            final resolved = _quoteForIcon(cat.iconCode);
-            if (resolved.isNotEmpty) cat.quote = resolved;
+            final resolved = iconQuotesByCodePoint[cat.iconCode];
+            if (resolved != null && resolved.isNotEmpty) cat.quote = resolved;
           }
         }
       } else {
         // Date implicite (doar la prima rulare)
         categories = [
-          PackingCategory(
+          _buildCategory(
             title: "Home",
-            iconCode: Icons.home.codePoint,
-            colorValue: Colors.teal.value,
-            quote: iconQuotes[Icons.home] ?? "",
+            icon: Icons.home,
+            color: Colors.teal,
             items: [
               PackingItem(name: "Keys"),
               PackingItem(name: "Wallet"),
@@ -117,11 +129,10 @@ class _HomeScreenState extends State<HomeScreen> {
               PackingItem(name: "Charger"),
             ],
           ),
-          PackingCategory(
+          _buildCategory(
             title: "University",
-            iconCode: Icons.school.codePoint,
-            colorValue: const Color.fromARGB(255, 161, 114, 39).value,
-            quote: iconQuotes[Icons.school] ?? "",
+            icon: Icons.school,
+            color: const Color.fromARGB(255, 161, 114, 39),
             items: [
               PackingItem(name: "Laptop"),
               PackingItem(name: "Charger"),
@@ -266,7 +277,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   decoration: BoxDecoration(
                                     color: selectedIcon == icon
                                         ? selectedColor.withOpacity(0.2)
-                                        : Colors.grey[200],
+                                        : const Color.fromARGB(255, 157, 157, 157),
                                     borderRadius: BorderRadius.circular(8),
                                     border: selectedIcon == icon
                                         ? Border.all(
@@ -279,7 +290,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     icon,
                                     color: selectedIcon == icon
                                         ? selectedColor
-                                        : Colors.grey,
+                                        : const Color.fromARGB(255, 0, 0, 0),
                                   ),
                                 ),
                               );
@@ -373,59 +384,74 @@ class _HomeScreenState extends State<HomeScreen> {
               itemCount: categories.length,
               itemBuilder: (context, index) {
                 final category = categories[index];
-                return Dismissible(
-                  // BONUS: Swipe to delete entire list
-                  key: UniqueKey(),
-                  direction: DismissDirection.endToStart,
-                  background: Container(
-                    color: Colors.red,
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 20),
-                    child: const Icon(Icons.delete, color: Colors.white),
-                  ),
-                  confirmDismiss: (direction) async {
-                    return await showDialog(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: const Text("Delete List?"),
-                        content: Text(
-                          "Are you sure you want to delete '${category.title}'?",
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Stack(
+                    children: [
+                      // Static background sitting behind the card
+                      Positioned.fill(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            color: Colors.red,
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.only(right: 20),
+                            child: const Icon(Icons.delete, color: Colors.white),
+                          ),
                         ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, false),
-                            child: const Text("Cancel"),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, true),
-                            child: const Text(
-                              "Delete",
-                              style: TextStyle(color: Colors.red),
-                            ),
-                          ),
-                        ],
                       ),
-                    );
-                  },
-                  onDismissed: (direction) {
-                    setState(() {
-                      categories.removeAt(index);
-                      _saveData();
-                    });
-                  },
-                  child: CategoryCard(
-                    category: category,
-                    onTap: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ChecklistScreen(
-                            category: category,
-                            onUpdate: _onCategoryUpdated,
-                          ),
+                      Dismissible(
+                        // Swipe to delete
+                        key: ValueKey(category.title),
+                        direction: DismissDirection.endToStart,
+                        background: const SizedBox.shrink(),
+                        secondaryBackground: const SizedBox.shrink(),
+                        confirmDismiss: (direction) async {
+                          return await showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text("Delete List?"),
+                              content: Text(
+                                "Are you sure you want to delete '${category.title}'?",
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, false),
+                                  child: const Text("Cancel"),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx, true),
+                                  child: const Text(
+                                    "Delete",
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        onDismissed: (direction) {
+                          setState(() {
+                            categories.removeAt(index);
+                            _saveData();
+                          });
+                        },
+                        child: CategoryCard(
+                          category: category,
+                          onTap: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChecklistScreen(
+                                  category: category,
+                                  onUpdate: _onCategoryUpdated,
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
+                      ),
+                    ],
                   ),
                 );
               },

@@ -108,7 +108,9 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
 
   void _resetList() {
     setState(() {
-      for (var item in widget.category.items) item.isChecked = false;
+      for (var item in widget.category.items) {
+        item.isChecked = false;
+      }
     });
     widget.onUpdate();
     ScaffoldMessenger.of(context).showSnackBar(

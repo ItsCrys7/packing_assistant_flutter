@@ -14,7 +14,7 @@ class CategoryCard extends StatelessWidget {
 
     return Card(
       elevation: 2,
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: onTap,
