@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
+import '../core/app_colors.dart';
+import '../core/app_constants.dart';
+import '../data/default_lists.dart';
 import '../models/packing_model.dart';
+import '../data/icon_catalog.dart';
 import '../widgets/category_card.dart';
 import 'checklist_screen.dart';
 import '../main.dart';
@@ -19,50 +23,13 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = true;
 
   // Lista de culori disponibile pentru alegere
-  final List<Color> availableColors = [
-    Colors.blue,
-    Colors.red,
-    Colors.green,
-    Colors.orange,
-    Colors.purple,
-    Colors.teal,
-    Colors.pink,
-    Colors.indigo,
-  ];
+  final List<Color> availableColors = AppColors.availableCategoryColors;
 
   // Lista de iconite disponibile pentru alegere
-  final List<IconData> availableIcons = [
-    Icons.home,
-    Icons.flight,
-    Icons.train,
-    Icons.directions_car,
-    Icons.hiking,
-    Icons.beach_access,
-    Icons.school,
-    Icons.fitness_center,
-    Icons.work,
-    Icons.music_note,
-    Icons.camera_alt,
-    Icons.shopping_bag,
-    Icons.pets,
-  ];
+  final List<IconData> availableIcons = IconCatalog.availableIcons;
 
   // Quick quotes mapped to icon choice
-  final Map<IconData, String> iconQuotes = {
-    Icons.home: "Home is where your story begins.",
-    Icons.flight: "Adventure awaits above the clouds.",
-    Icons.train: "Stay on track and enjoy the journey.",
-    Icons.directions_car: "Roads were made for journeys, not destinations.",
-    Icons.hiking: "Take only memories, leave only footprints.",
-    Icons.beach_access: "Salt in the air, sand in your hair.",
-    Icons.school: "Learning is your passport to the future.",
-    Icons.fitness_center: "One rep closer to your goal.",
-    Icons.work: "Pack smart, deliver sharp.",
-    Icons.music_note: "Pack the vibes, not just the gear.",
-    Icons.camera_alt: "Collect moments, not things.",
-    Icons.shopping_bag: "List it, pack it, enjoy it.",
-    Icons.pets: "Don't forget the furry friend.",
-  };
+  final Map<IconData, String> iconQuotes = IconCatalog.iconQuotes;
 
   late final Map<int, String> iconQuotesByCodePoint = {
     for (final entry in iconQuotes.entries) entry.key.codePoint: entry.value,
@@ -79,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final String encodedData = jsonEncode(
       categories.map((c) => c.toJson()).toList(),
     );
-    await prefs.setString('packing_list_data', encodedData);
+    await prefs.setString(AppConstants.prefPackingListData, encodedData);
   }
 
   PackingCategory _buildCategory({
@@ -100,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
-    final String? startData = prefs.getString('packing_list_data');
+    final String? startData = prefs.getString(AppConstants.prefPackingListData);
 
     setState(() {
       if (startData != null) {
@@ -117,29 +84,9 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       } else {
         // Date implicite (doar la prima rulare)
-        categories = [
-          _buildCategory(
-            title: "Home",
-            icon: Icons.home,
-            color: Colors.teal,
-            items: [
-              PackingItem(name: "Keys"),
-              PackingItem(name: "Wallet"),
-              PackingItem(name: "Phone"),
-              PackingItem(name: "Charger"),
-            ],
-          ),
-          _buildCategory(
-            title: "University",
-            icon: Icons.school,
-            color: const Color.fromARGB(255, 161, 114, 39),
-            items: [
-              PackingItem(name: "Laptop"),
-              PackingItem(name: "Charger"),
-              PackingItem(name: "ID Card"),
-            ],
-          ),
-        ];
+        categories = DefaultLists.build(
+          iconQuotesByCodePoint: iconQuotesByCodePoint,
+        );
         _saveData();
       }
       isLoading = false;
@@ -197,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Focus(
                   autofocus: true,
                   child: AlertDialog(
-                    title: const Text("New Category"),
+                    title: const Text(AppConstants.newCategoryTitle),
                     content: SingleChildScrollView(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -207,8 +154,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           TextField(
                             controller: titleController,
                             decoration: const InputDecoration(
-                              labelText: "List Name",
-                              hintText: "e.g. Gym, Holiday",
+                              labelText: AppConstants.listNameLabel,
+                              hintText: AppConstants.listNameHint,
                               border: OutlineInputBorder(),
                             ),
                           ),
@@ -216,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                           // 2. Selectare Culoare
                           const Text(
-                            "Pick a Color:",
+                            AppConstants.pickColorLabel,
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 10),
@@ -256,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                           // 3. Selectare Iconita
                           const Text(
-                            "Pick an Icon:",
+                            AppConstants.pickIconLabel,
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 10),
@@ -277,7 +224,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   decoration: BoxDecoration(
                                     color: selectedIcon == icon
                                         ? selectedColor.withOpacity(0.2)
-                                        : const Color.fromARGB(255, 157, 157, 157),
+                                        : AppColors
+                                              .iconPickerUnselectedBackground,
                                     borderRadius: BorderRadius.circular(8),
                                     border: selectedIcon == icon
                                         ? Border.all(
@@ -290,7 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     icon,
                                     color: selectedIcon == icon
                                         ? selectedColor
-                                        : const Color.fromARGB(255, 0, 0, 0),
+                                        : AppColors.iconPickerUnselectedIcon,
                                   ),
                                 ),
                               );
@@ -302,7 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text("Cancel"),
+                        child: const Text(AppConstants.cancel),
                       ),
                       ElevatedButton(
                         onPressed: () {
@@ -326,7 +274,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           backgroundColor: selectedColor,
                           foregroundColor: Colors.white,
                         ),
-                        child: const Text("Create"),
+                        child: const Text(AppConstants.create),
                       ),
                     ],
                   ),
@@ -347,7 +295,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Packing Lists'),
+        title: const Text(AppConstants.homeAppBarTitle),
         centerTitle: true,
 
         // Nu mai punem culori hardcodate aici, le luăm din Theme definit in main.dart
@@ -369,7 +317,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               // 2. Salvăm preferința permanent
               final prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('isDarkMode', isNowDark);
+              await prefs.setBool(AppConstants.prefIsDarkMode, isNowDark);
 
               // Forțăm o actualizare a UI-ului local pentru iconiță
               setState(() {});
@@ -378,7 +326,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: categories.isEmpty
-          ? const Center(child: Text("No lists yet. Tap + to create one!"))
+          ? const Center(child: Text(AppConstants.emptyListsMessage))
           : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: categories.length,
@@ -393,10 +341,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: Container(
-                            color: Colors.red,
+                            color: AppColors.deleteSwipeBackground,
                             alignment: Alignment.centerRight,
                             padding: const EdgeInsets.only(right: 20),
-                            child: const Icon(Icons.delete, color: Colors.white),
+                            child: const Icon(
+                              Icons.delete,
+                              color: AppColors.deleteIcon,
+                            ),
                           ),
                         ),
                       ),
@@ -410,20 +361,24 @@ class _HomeScreenState extends State<HomeScreen> {
                           return await showDialog(
                             context: context,
                             builder: (ctx) => AlertDialog(
-                              title: const Text("Delete List?"),
+                              title: const Text(AppConstants.deleteListTitle),
                               content: Text(
-                                "Are you sure you want to delete '${category.title}'?",
+                                AppConstants.deleteListConfirmText(
+                                  category.title,
+                                ),
                               ),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.pop(ctx, false),
-                                  child: const Text("Cancel"),
+                                  child: const Text(AppConstants.cancel),
                                 ),
                                 TextButton(
                                   onPressed: () => Navigator.pop(ctx, true),
                                   child: const Text(
-                                    "Delete",
-                                    style: TextStyle(color: Colors.red),
+                                    AppConstants.delete,
+                                    style: TextStyle(
+                                      color: AppColors.deleteSwipeBackground,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -458,8 +413,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addNewCategory,
-        backgroundColor: const Color.fromARGB(255, 106, 106, 106),
-        child: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: AppColors.fabBackground,
+        child: const Icon(Icons.add, color: AppColors.deleteIcon),
       ),
     );
   }

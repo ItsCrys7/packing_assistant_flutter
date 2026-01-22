@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/app_constants.dart';
 import '../models/packing_model.dart';
 
 class CategoryCard extends StatelessWidget {
@@ -45,7 +46,7 @@ class CategoryCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "$checked / $total items packed",
+                      AppConstants.itemsPackedText(checked, total),
                       style: TextStyle(color: Colors.grey[600]),
                     ),
                   ],

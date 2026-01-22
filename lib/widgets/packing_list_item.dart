@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/app_colors.dart';
 import '../models/packing_model.dart';
 
 class PackingListItem extends StatelessWidget {
@@ -30,16 +31,18 @@ class PackingListItem extends StatelessWidget {
         elevation: 0,
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         // MODIFICARE 1: Folosim o culoare transparenta care arată bine și pe Dark și pe Light
-        color: isSelectedForDelete 
-            ? Colors.red.withOpacity(isDark ? 0.3 : 0.1) // <--- Mai închis pe Dark Mode
+        color: isSelectedForDelete
+            ? AppColors.deleteSelection.withOpacity(
+                isDark ? 0.3 : 0.1,
+              ) // <--- Mai închis pe Dark Mode
             : Colors.transparent,
         child: ListTile(
           leading: Icon(
             isSelectedForDelete ? Icons.check_circle : Icons.circle_outlined,
-            color: Colors.red,
+            color: AppColors.deleteSelection,
           ),
           // Aici nu puneai stil, deci Flutter lua automat culoarea corectă (Alb pe negru / Negru pe alb)
-          title: Text(item.name), 
+          title: Text(item.name),
           onTap: onTapDelete,
         ),
       );
@@ -56,11 +59,13 @@ class PackingListItem extends StatelessWidget {
               ? TextDecoration.lineThrough
               : TextDecoration.none,
           // MODIFICARE 2: Aici era problema cu textul invizibil
-          // Dacă e bifat -> gri. 
+          // Dacă e bifat -> gri.
           // Dacă NU e bifat -> luăm culoarea textului din Tema curentă (Alb sau Negru)
-          color: item.isChecked 
-              ? Colors.grey 
-              : Theme.of(context).textTheme.bodyLarge?.color, // <--- AICI E CHEIA
+          color: item.isChecked
+              ? AppColors.checkedText
+              : Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.color, // <--- AICI E CHEIA
         ),
       ),
       value: item.isChecked,

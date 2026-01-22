@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart'; // <--- IMPORT IMPORTANT
 import 'package:flutter/services.dart';
+import '../core/app_colors.dart';
+import '../core/app_constants.dart';
 import '../models/packing_model.dart';
 import '../widgets/packing_list_item.dart'; // <--- Importam widgetul nou creat
 
@@ -62,7 +64,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("Cancel"),
+                  child: const Text(AppConstants.cancel),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -71,7 +73,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
                       Navigator.pop(context);
                     }
                   },
-                  child: const Text("Save"),
+                  child: const Text(AppConstants.save),
                 ),
               ],
             ),
@@ -84,8 +86,8 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
   // --- Logic Methods ---
   void _addNewTask() {
     _showInputDialog(
-      title: "Add New Item",
-      hint: "Item name (e.g. Towel)",
+      title: AppConstants.addNewItemTitle,
+      hint: AppConstants.addNewItemHint,
       onSave: (text) {
         setState(() {
           widget.category.items.add(PackingItem(name: text));
@@ -97,7 +99,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
 
   void _editTitle() {
     _showInputDialog(
-      title: "Rename List",
+      title: AppConstants.renameListTitle,
       initialValue: widget.category.title,
       onSave: (text) {
         setState(() => widget.category.title = text);
@@ -115,7 +117,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
     widget.onUpdate();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text("List reset!"),
+        content: const Text(AppConstants.listResetMessage),
         backgroundColor: widget.category.color,
       ),
     );
@@ -134,11 +136,13 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
   Widget build(BuildContext context) {
     final String headerQuote = widget.category.quote.isNotEmpty
         ? widget.category.quote
-        : "Pack smart and travel light.";
+        : AppConstants.defaultQuote;
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: isDeleteMode ? Colors.red : widget.category.color,
+        backgroundColor: isDeleteMode
+            ? AppColors.deleteModeAppBar
+            : widget.category.color,
         foregroundColor: Colors.white,
         title: Row(
           children: [
@@ -205,20 +209,20 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
 
           if (isDeleteMode)
             Container(
-              color: Colors.red[50],
+              color: AppColors.deleteModeBannerBackground,
               padding: const EdgeInsets.all(8),
               width: double.infinity,
               child: const Text(
-                "Tap items to delete",
+                AppConstants.tapItemsToDelete,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.red),
+                style: TextStyle(color: AppColors.deleteModeBannerText),
               ),
             ),
 
           // LISTA EFICIENTA
           Expanded(
             child: widget.category.items.isEmpty
-                ? const Center(child: Text("List is empty."))
+                ? const Center(child: Text(AppConstants.listEmptyMessage))
                 : ListView.separated(
                     padding: const EdgeInsets.only(
                       bottom: 80,
@@ -269,16 +273,16 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
               children: [
                 SpeedDialChild(
                   child: const Icon(Icons.add),
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  label: 'Add Item',
+                  backgroundColor: AppColors.speedDialAdd,
+                  foregroundColor: AppColors.speedDialForeground,
+                  label: AppConstants.addItem,
                   onTap: _addNewTask,
                 ),
                 SpeedDialChild(
                   child: const Icon(Icons.refresh),
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                  label: 'Reset List',
+                  backgroundColor: AppColors.speedDialReset,
+                  foregroundColor: AppColors.speedDialForeground,
+                  label: AppConstants.resetList,
                   onTap: _resetList,
                 ),
               ],
