@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../core/app_constants.dart';
+import '../common/app_constants.dart';
 
 class IconCatalog {
   static const List<IconData> availableIcons = [

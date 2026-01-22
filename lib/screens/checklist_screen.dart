@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart'; // <--- IMPORT IMPORTANT
 import 'package:flutter/services.dart';
-import '../core/app_colors.dart';
-import '../core/app_constants.dart';
+import '../common/app_colors.dart';
+import '../common/app_constants.dart';
 import '../models/packing_model.dart';
 import '../widgets/packing_list_item.dart'; // <--- Importam widgetul nou creat
 

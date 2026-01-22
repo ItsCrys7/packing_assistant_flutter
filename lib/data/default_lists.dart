@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../core/app_colors.dart';
-import '../core/app_constants.dart';
+import '../common/app_colors.dart';
+import '../common/app_constants.dart';
 import '../models/packing_model.dart';
 
 class DefaultLists {

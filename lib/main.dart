@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'core/app_constants.dart';
-import 'core/app_theme.dart';
+import 'common/app_constants.dart';
+import 'common/app_theme.dart';
 import 'screens/home_screen.dart';
 
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);

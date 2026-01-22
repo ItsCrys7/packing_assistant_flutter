@@ -1,5 +1,5 @@
 class AppConstants {
-  static const appTitle = 'BellyBuddy - Your Daily Food Guide';
+  static const appTitle = 'PackMate - Your Travel Packing Assistant';
 
   // Home screen
   static const homeAppBarTitle = 'My Packing Lists';
