@@ -3,14 +3,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'screens/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Import pentru salvare
 
-// 1. Creăm un "ascultător" global pentru temă
-// Implicit pornește pe modul sistemului (sau Light)
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 2. Încărcăm preferința salvată (dacă există)
   final prefs = await SharedPreferences.getInstance();
   final bool? isDark = prefs.getBool('isDarkMode');
 
@@ -26,8 +23,6 @@ class PackingApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 3. Înfășurăm aplicația în ValueListenableBuilder
-    // Asta face ca aplicația să se redesseneze când schimbăm tema
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: themeNotifier,
       builder: (context, currentMode, child) {
@@ -35,7 +30,6 @@ class PackingApp extends StatelessWidget {
           title: 'Pack Smart',
           debugShowCheckedModeBanner: false,
 
-          // Setarea modului curent (Light, Dark sau System)
           themeMode: currentMode,
 
           // --- TEMA LIGHT ---
