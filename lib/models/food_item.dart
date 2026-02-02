@@ -1,27 +1,27 @@
-class FoodItem {
+class ListTemplateItem {
   final String id;
   final String name;
-  final int calories;
-  final String imageAsset;
+  final String notes;
+  final String iconName;
 
-  const FoodItem({
+  const ListTemplateItem({
     required this.id,
     required this.name,
-    required this.calories,
-    required this.imageAsset,
+    this.notes = '',
+    this.iconName = '',
   });
 
-  FoodItem copyWith({
+  ListTemplateItem copyWith({
     String? id,
     String? name,
-    int? calories,
-    String? imageAsset,
+    String? notes,
+    String? iconName,
   }) {
-    return FoodItem(
+    return ListTemplateItem(
       id: id ?? this.id,
       name: name ?? this.name,
-      calories: calories ?? this.calories,
-      imageAsset: imageAsset ?? this.imageAsset,
+      notes: notes ?? this.notes,
+      iconName: iconName ?? this.iconName,
     );
   }
 }

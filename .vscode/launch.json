@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "BellyBuddy (Web 3000)",
+      "name": "PackMate (Web 3000)",
       "request": "launch",
       "type": "dart",
       "args": ["--web-port=3000"]

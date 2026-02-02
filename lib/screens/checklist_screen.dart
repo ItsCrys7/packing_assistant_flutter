@@ -262,7 +262,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
       floatingActionButton: isDeleteMode
           ? null
           : SpeedDial(
-              icon: Icons.lunch_dining, // iconita burger cand e inchis
+              icon: Icons.playlist_add_check, // iconita lista cand e inchis
               activeIcon: Icons.close,
               backgroundColor: widget.category.color,
               foregroundColor: Colors.white,

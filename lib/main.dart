@@ -16,11 +16,11 @@ Future<void> main() async {
     themeNotifier.value = isDark ? ThemeMode.dark : ThemeMode.light;
   }
 
-  runApp(const BellyBuddyApp());
+  runApp(const PackMateApp());
 }
 
-class BellyBuddyApp extends StatelessWidget {
-  const BellyBuddyApp({super.key});
+class PackMateApp extends StatelessWidget {
+  const PackMateApp({super.key});
 
   @override
   Widget build(BuildContext context) {

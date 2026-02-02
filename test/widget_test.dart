@@ -12,7 +12,7 @@ import 'package:packing_assistant/screens/home_screen.dart';
 
 void main() {
   testWidgets('Loads home screen', (WidgetTester tester) async {
-    await tester.pumpWidget(const PackingApp());
+    await tester.pumpWidget(const PackMateApp());
     await tester.pumpAndSettle();
 
     expect(find.byType(HomeScreen), findsOneWidget);
