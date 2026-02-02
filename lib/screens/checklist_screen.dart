@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart'; // <--- IMPORT IMPORTANT
+import 'package:flutter_speed_dial/flutter_speed_dial.dart'; // pentru Burger Menu
 import 'package:flutter/services.dart';
 import '../common/app_colors.dart';
 import '../common/app_constants.dart';
 import '../models/packing_model.dart';
-import '../widgets/packing_list_item.dart'; // <--- Importam widgetul nou creat
+import '../widgets/packing_list_item.dart';
 
 /// Screen that displays and manages items in a packing category.
 class ChecklistScreen extends StatefulWidget {
