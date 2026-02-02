@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import '../common/app_constants.dart';
 import '../models/packing_model.dart';
 
+/// Card widget displaying a packing category summary.
 class CategoryCard extends StatelessWidget {
   final PackingCategory category;
   final VoidCallback onTap;
 
+  /// Creates a category card.
   const CategoryCard({super.key, required this.category, required this.onTap});
 
+  /// Builds the category card UI.
   @override
   Widget build(BuildContext context) {
     int total = category.items.length;

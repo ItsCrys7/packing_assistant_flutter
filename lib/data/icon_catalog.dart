@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../common/app_constants.dart';
 
+/// Catalog of icons and their associated quotes.
 class IconCatalog {
   static const List<IconData> availableIcons = [
     Icons.home,

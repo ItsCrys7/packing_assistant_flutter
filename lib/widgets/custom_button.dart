@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
+/// Reusable full-width button widget.
 class CustomButton extends StatelessWidget {
   final String label;
   final VoidCallback onPressed;
   final Color? backgroundColor;
 
+  /// Creates a custom button.
   const CustomButton({
     super.key,
     required this.label,
@@ -12,6 +14,7 @@ class CustomButton extends StatelessWidget {
     this.backgroundColor,
   });
 
+  /// Builds the button UI.
   @override
   Widget build(BuildContext context) {
     return SizedBox(

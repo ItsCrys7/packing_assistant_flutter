@@ -3,7 +3,9 @@ import '../common/app_colors.dart';
 import '../common/app_constants.dart';
 import '../models/packing_model.dart';
 
+/// Builds the predefined packing lists used on first run.
 class DefaultLists {
+  /// Returns a list of default categories with items.
   static List<PackingCategory> build({
     required Map<int, String> iconQuotesByCodePoint,
   }) {
@@ -34,6 +36,7 @@ class DefaultLists {
     ];
   }
 
+  /// Creates a single default category with the provided items.
   static PackingCategory _buildCategory({
     required String title,
     required IconData icon,

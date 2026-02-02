@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../common/app_colors.dart';
 import '../models/packing_model.dart';
 
+/// List item widget for a packing list entry.
 class PackingListItem extends StatelessWidget {
   final PackingItem item;
   final Color color;
@@ -10,6 +11,7 @@ class PackingListItem extends StatelessWidget {
   final Function(bool?) onCheckboxChanged;
   final VoidCallback onTapDelete;
 
+  /// Creates a packing list item widget.
   const PackingListItem({
     super.key,
     required this.item,
@@ -20,6 +22,7 @@ class PackingListItem extends StatelessWidget {
     required this.onTapDelete,
   });
 
+  /// Builds the list item UI based on the current mode.
   @override
   Widget build(BuildContext context) {
     // Luam tema curentă pentru a verifica dacă e Dark Mode sau nu

@@ -6,6 +6,7 @@ import 'screens/home_screen.dart';
 
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
 
+/// Entry point for the application.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -19,9 +20,11 @@ Future<void> main() async {
   runApp(const PackMateApp());
 }
 
+/// Root application widget that wires themes and home screen.
 class PackMateApp extends StatelessWidget {
   const PackMateApp({super.key});
 
+  /// Builds the app with the current theme mode.
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<ThemeMode>(

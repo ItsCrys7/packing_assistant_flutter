@@ -11,13 +11,16 @@ import '../widgets/category_card.dart';
 import 'checklist_screen.dart';
 import '../main.dart';
 
+/// Home screen that shows all packing categories.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
+  /// Creates the state for the home screen.
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+/// State for HomeScreen managing categories and persistence.
 class _HomeScreenState extends State<HomeScreen> {
   List<PackingCategory> categories = [];
   bool isLoading = true;
@@ -35,43 +38,34 @@ class _HomeScreenState extends State<HomeScreen> {
     for (final entry in iconQuotes.entries) entry.key.codePoint: entry.value,
   };
 
+  /// Loads saved data when the screen initializes.
   @override
   void initState() {
     super.initState();
     _loadData();
   }
 
+  /// Persists categories in local storage.
   Future<void> _saveData() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs =
+        await SharedPreferences.getInstance(); //SharedPreferences pentru salvarea datelor
     final String encodedData = jsonEncode(
       categories.map((c) => c.toJson()).toList(),
     );
     await prefs.setString(AppConstants.prefPackingListData, encodedData);
   }
 
-  PackingCategory _buildCategory({
-    required String title,
-    required IconData icon,
-    required Color color,
-    String? quote,
-    List<PackingItem>? items,
-  }) {
-    return PackingCategory(
-      title: title,
-      iconCode: icon.codePoint,
-      colorValue: color.value,
-      quote: quote ?? (iconQuotesByCodePoint[icon.codePoint] ?? ""),
-      items: items ?? <PackingItem>[],
-    );
-  }
-
+  /// Loads categories from local storage or defaults.
   Future<void> _loadData() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs =
+        await SharedPreferences.getInstance(); //SharedPreferences pentru salvarea datelor
     final String? startData = prefs.getString(AppConstants.prefPackingListData);
 
     setState(() {
       if (startData != null) {
-        final List<dynamic> decodedList = jsonDecode(startData);
+        final List<dynamic> decodedList = jsonDecode(
+          startData,
+        ); // prin jsonDecode citesc datele salvate
         categories = decodedList
             .map((item) => PackingCategory.fromJson(item))
             .toList();
@@ -93,12 +87,14 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  /// Refreshes UI and saves data after updates.
   void _onCategoryUpdated() {
     setState(() {});
     _saveData();
   }
 
   // --- FUNCTIA MODIFICATA PENTRU SELECTIE CULOARE SI ICONITA ---
+  /// Shows dialog to add a new category.
   void _addNewCategory() {
     TextEditingController titleController = TextEditingController();
 
@@ -287,6 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  /// Builds the home screen UI.
   @override
   Widget build(BuildContext context) {
     if (isLoading) {

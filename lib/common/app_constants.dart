@@ -1,3 +1,4 @@
+/// String literals and shared constants for the app.
 class AppConstants {
   static const appTitle = 'PackMate - Your Travel Packing Assistant';
 
@@ -15,7 +16,7 @@ class AppConstants {
   static const deleteListConfirmPrefix = 'Are you sure you want to delete';
   static const delete = 'Delete';
 
-  // Preferences keys
+  // SharedPreferences keys - accesarea datelor salvate local
   static const prefPackingListData = 'packing_list_data';
   static const prefIsDarkMode = 'isDarkMode';
 
@@ -57,9 +58,12 @@ class AppConstants {
   static const resetList = 'Reset List';
 
   static const itemsPackedLabel = 'items packed';
+
+  /// Formats packed items text like "3 / 5 items packed".
   static String itemsPackedText(int checked, int total) =>
       '$checked / $total $itemsPackedLabel';
 
+  /// Builds the delete confirmation message for a list.
   static String deleteListConfirmText(String listTitle) =>
       "$deleteListConfirmPrefix '$listTitle'?";
 }

@@ -6,25 +6,30 @@ import '../common/app_constants.dart';
 import '../models/packing_model.dart';
 import '../widgets/packing_list_item.dart'; // <--- Importam widgetul nou creat
 
+/// Screen that displays and manages items in a packing category.
 class ChecklistScreen extends StatefulWidget {
   final PackingCategory category;
   final VoidCallback onUpdate;
 
+  /// Creates a checklist screen for a given category.
   const ChecklistScreen({
     super.key,
     required this.category,
     required this.onUpdate,
   });
 
+  /// Creates the state for the checklist screen.
   @override
   State<ChecklistScreen> createState() => _ChecklistScreenState();
 }
 
+/// State for ChecklistScreen handling list interactions.
 class _ChecklistScreenState extends State<ChecklistScreen> {
   bool isDeleteMode = false;
   // Nota: Am sters "isMenuOpen", SpeedDial se ocupa singur de asta!
   List<PackingItem> itemsToDelete = [];
 
+  /// Shows an input dialog and invokes callback when saved.
   void _showInputDialog({
     required String title,
     String initialValue = '',
@@ -84,6 +89,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
   }
 
   // --- Logic Methods ---
+  /// Adds a new item to the current category.
   void _addNewTask() {
     _showInputDialog(
       title: AppConstants.addNewItemTitle,
@@ -97,6 +103,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
     );
   }
 
+  /// Edits the current category title.
   void _editTitle() {
     _showInputDialog(
       title: AppConstants.renameListTitle,
@@ -108,6 +115,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
     );
   }
 
+  /// Resets all items to unchecked state.
   void _resetList() {
     setState(() {
       for (var item in widget.category.items) {
@@ -123,6 +131,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
     );
   }
 
+  /// Deletes all selected items from the list.
   void _deleteSelectedItems() {
     setState(() {
       widget.category.items.removeWhere((item) => itemsToDelete.contains(item));
@@ -132,6 +141,7 @@ class _ChecklistScreenState extends State<ChecklistScreen> {
     widget.onUpdate();
   }
 
+  /// Builds the checklist screen UI.
   @override
   Widget build(BuildContext context) {
     final String headerQuote = widget.category.quote.isNotEmpty

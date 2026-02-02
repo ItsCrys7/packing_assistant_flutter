@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Color palette used across the app UI.
 class AppColors {
   // Category colors
   static const List<Color> availableCategoryColors = [

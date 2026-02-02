@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
+/// Centralized theme definitions for light and dark modes.
 class AppTheme {
+  /// Returns the light theme configuration.
   static ThemeData lightTheme() {
     return ThemeData(
       brightness: Brightness.light,
@@ -20,6 +22,7 @@ class AppTheme {
     );
   }
 
+  /// Returns the dark theme configuration.
   static ThemeData darkTheme() {
     return ThemeData(
       brightness: Brightness.dark,
